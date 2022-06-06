@@ -707,6 +707,19 @@ extension ChatClient: ConnectionStateDelegate {
     }
 }
 
+extension ChatClient {
+    public func getCallToken(callId: String, completion: @escaping (Result<CallToken, Error>) -> Void) {
+        apiClient.request(endpoint: .getCallToken(callId: callId)) { result in
+            switch result {
+            case let .failure(error):
+                completion(.failure(error))
+            case let .success(tokenPayload):
+                completion(.success(.init(token: tokenPayload.token, agoraUid: tokenPayload.agoraUid)))
+            }
+        }
+    }
+}
+
 /// `Client` provides connection details for the `RequestEncoder`s it creates.
 extension ChatClient: ConnectionDetailsProviderDelegate {
     @discardableResult

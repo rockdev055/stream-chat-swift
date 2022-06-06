@@ -1315,6 +1315,26 @@ public extension ChatChannelController {
             }
         }
     }
+    
+    func createCall(id: String, type: String, completion: @escaping (Result<CallWithToken, Error>) -> Void) {
+        guard let cid = cid, isChannelAlreadyCreated else {
+            channelModificationFailed { completion(.failure($0 ?? ClientError.ChannelNotCreatedYet())) }
+            return
+        }
+        
+        updater.createCall(in: cid, id: id, type: type) {
+            switch $0 {
+            case let .success(messages):
+                self.callback {
+                    completion(.success(messages))
+                }
+            case let .failure(error):
+                self.callback {
+                    completion(.failure(error))
+                }
+            }
+        }
+    }
 }
 
 extension ChatChannelController {

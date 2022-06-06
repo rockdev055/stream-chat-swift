@@ -67,6 +67,7 @@ final class SyncEventsOperation: AsyncOperation {
 final class WatchChannelOperation: AsyncOperation {
     init(controller: ChatChannelController, context: SyncContext) {
         super.init(maxRetries: syncOperationsMaximumRetries) { [weak controller] _, done in
+            print("debugging: WatchChannelOperation")
             guard let controller = controller, controller.canBeRecovered else {
                 done(.continue)
                 return

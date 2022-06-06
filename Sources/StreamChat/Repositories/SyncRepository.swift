@@ -99,6 +99,7 @@ class SyncRepository {
     ///
     /// - Parameter completion: A block that will get executed upon completion of the synchronization
     private func syncLocalState(lastSyncAt: Date, completion: @escaping () -> Void) {
+        print("debugging: local state bullshit")
         log.info("Starting to recover offline state", subsystems: .offlineSupport)
         let context = SyncContext(lastSyncAt: lastSyncAt)
         var operations: [Operation] = []
