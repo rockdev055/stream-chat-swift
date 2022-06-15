@@ -23,10 +23,12 @@ public struct Call: Encodable {
 public struct CallWithToken: Encodable {
     public let call: Call
     public let token: String
-    public let agoraUid: String?
+    public let agoraUid: UInt?
+    public let agoraAppId: String?
 }
 
 public struct CallToken {
     public let token: String
-    public let agoraUid: String?
+    public let agoraUid: UInt?
+    public let agoraAppId: String?
 }

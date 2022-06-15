@@ -521,7 +521,8 @@ class ChannelUpdater: Worker {
                 let callWithToken = CallWithToken(
                     call: call,
                     token: payload.token,
-                    agoraUid: payload.agoraUid
+                    agoraUid: payload.agoraUid,
+                    agoraAppId: payload.agoraAppId
                 )
                 completion(.success(callWithToken))
             case let .failure(error):

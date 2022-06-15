@@ -714,7 +714,11 @@ extension ChatClient {
             case let .failure(error):
                 completion(.failure(error))
             case let .success(tokenPayload):
-                completion(.success(.init(token: tokenPayload.token, agoraUid: tokenPayload.agoraUid)))
+                completion(.success(.init(
+                    token: tokenPayload.token,
+                    agoraUid: tokenPayload.agoraUid,
+                    agoraAppId: tokenPayload.agoraAppId
+                )))
             }
         }
     }

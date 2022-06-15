@@ -8,16 +8,20 @@ struct CallTokenPayload: Decodable {
     private enum CodingKeys: String, CodingKey {
         case token
         case agoraUid = "agora_uid"
+        case agoraAppId = "agora_app_id"
     }
     
     /// The call token.
     let token: String
     /// The UID related to this token (Agora only).
-    let agoraUid: String?
-    
-    init(token: String, agoraUid: String?) {
+    let agoraUid: UInt?
+    /// The Agora App Id (Agora only).
+    let agoraAppId: String?
+
+    init(token: String, agoraUid: UInt?, agoraAppId: String?) {
         self.token = token
         self.agoraUid = agoraUid
+        self.agoraAppId = agoraAppId
     }
 }
 
@@ -46,6 +50,7 @@ struct CreateCallPayload: Decodable {
     private enum CodingKeys: String, CodingKey {
         case token
         case agoraUid = "agora_uid"
+        case agoraAppId = "agora_app_id"
         case call
     }
 
@@ -56,11 +61,15 @@ struct CreateCallPayload: Decodable {
     let token: String
 
     /// The UID related to this token (Agora only).
-    let agoraUid: String?
-    
-    init(call: CallPayload, token: String, agoraUid: String?) {
+    let agoraUid: UInt?
+
+    /// The Agora App Id (Agora only).
+    let agoraAppId: String?
+
+    init(call: CallPayload, token: String, agoraUid: UInt?, agoraAppId: String?) {
         self.call = call
         self.token = token
         self.agoraUid = agoraUid
+        self.agoraAppId = agoraAppId
     }
 }
