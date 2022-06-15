@@ -378,6 +378,7 @@ public class ChatChannelController: DataController, DelegateCallable, DataStoreP
                         log.warning("Callback called while self is nil")
                         return
                     }
+                    log.debug("didUpdateMessages: \(changes.map(\.debugDescription))")
                     $0.channelController(self, didUpdateMessages: changes)
                 }
             }
@@ -790,7 +791,7 @@ public extension ChatChannelController {
     ///
     /// - Parameter completion: a completion block with an error if the request was failed.
     ///
-    func sendKeystrokeEvent(completion: ((Error?) -> Void)? = nil) {
+    func sendKeystrokeEvent(parentMessageId: MessageId? = nil, completion: ((Error?) -> Void)? = nil) {
         /// Ignore if typing events are not enabled
         guard areTypingEventsEnabled else {
             callback {
@@ -805,7 +806,7 @@ public extension ChatChannelController {
             return
         }
         
-        eventSender.keystroke(in: cid) { error in
+        eventSender.keystroke(in: cid, parentMessageId: parentMessageId) { error in
             self.callback {
                 completion?(error)
             }
@@ -820,7 +821,7 @@ public extension ChatChannelController {
     ///
     /// - Parameter completion: a completion block with an error if the request was failed.
     ///
-    func sendStartTypingEvent(completion: ((Error?) -> Void)? = nil) {
+    func sendStartTypingEvent(parentMessageId: MessageId? = nil, completion: ((Error?) -> Void)? = nil) {
         /// Ignore if typing events are not enabled
         guard areTypingEventsEnabled else {
             channelFeatureDisabled(feature: "typing events", completion: completion)
@@ -833,7 +834,7 @@ public extension ChatChannelController {
             return
         }
         
-        eventSender.startTyping(in: cid) { error in
+        eventSender.startTyping(in: cid, parentMessageId: parentMessageId) { error in
             self.callback {
                 completion?(error)
             }
@@ -848,7 +849,7 @@ public extension ChatChannelController {
     ///
     /// - Parameter completion: a completion block with an error if the request was failed.
     ///
-    func sendStopTypingEvent(completion: ((Error?) -> Void)? = nil) {
+    func sendStopTypingEvent(parentMessageId: MessageId? = nil, completion: ((Error?) -> Void)? = nil) {
         /// Ignore if typing events are not enabled
         guard areTypingEventsEnabled else {
             channelFeatureDisabled(feature: "typing events", completion: completion)
@@ -861,7 +862,7 @@ public extension ChatChannelController {
             return
         }
         
-        eventSender.stopTyping(in: cid) { error in
+        eventSender.stopTyping(in: cid, parentMessageId: parentMessageId) { error in
             self.callback {
                 completion?(error)
             }
@@ -900,7 +901,7 @@ public extension ChatChannelController {
         }
         
         /// Send stop typing event.
-        eventSender.stopTyping(in: cid)
+        eventSender.stopTyping(in: cid, parentMessageId: nil)
         
         updater.createNewMessage(
             in: cid,
@@ -1335,7 +1336,18 @@ public extension ChatChannelController {
             }
         }
     }
-}
+
+    /// Returns the current cooldown time for the channel. Returns 0 in case there is no cooldown active.
+    func currentCooldownTime() -> Int {
+        guard let cooldownDuration = channel?.cooldownDuration,
+              let currentUserLastMessage = channel?.lastMessageFromCurrentUser else {
+            return 0
+        }
+        
+        let currentTime = Date().timeIntervalSince(currentUserLastMessage.createdAt)
+        
+        return max(0, cooldownDuration - Int(currentTime))
+    }
 
 extension ChatChannelController {
     struct Environment {

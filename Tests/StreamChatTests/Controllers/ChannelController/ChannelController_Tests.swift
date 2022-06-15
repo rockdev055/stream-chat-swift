@@ -424,8 +424,8 @@ final class ChannelController_Tests: XCTestCase {
             oldMessageId = dto.id
         }
         var channel = try XCTUnwrap(client.databaseContainer.viewContext.channel(cid: channelId))
-        XCTAssertEqual(channel.lastMessageAt, originalLastMessageAt)
-        
+        XCTAssertNearlySameDate(channel.lastMessageAt?.bridgeDate, originalLastMessageAt)
+
         // Create a new message payload that's newer than `channel.lastMessageAt`
         let newerMessagePayload: MessagePayload = .dummy(
             messageId: .unique,
@@ -437,7 +437,7 @@ final class ChannelController_Tests: XCTestCase {
             try $0.saveMessage(payload: newerMessagePayload, for: channelId, syncOwnReactions: true)
         }
         channel = try XCTUnwrap(client.databaseContainer.viewContext.channel(cid: channelId))
-        XCTAssertEqual(channel.lastMessageAt, newerMessagePayload.createdAt)
+        XCTAssertEqual(channel.lastMessageAt?.bridgeDate, newerMessagePayload.createdAt)
         
         // Check if the message ordering is correct
         // First message should be the newest message
@@ -944,7 +944,7 @@ final class ChannelController_Tests: XCTestCase {
         // Set channel `truncatedAt` date before the 5th message
         let truncatedAtDate = controller.messages[4].createdAt.addingTimeInterval(-0.1)
         try client.databaseContainer.writeSynchronously {
-            $0.channel(cid: self.channelId)?.truncatedAt = truncatedAtDate
+            $0.channel(cid: self.channelId)?.truncatedAt = truncatedAtDate.bridgeDate
         }
 
         // Check only the 5 messages after the truncatedAt date are visible
@@ -1222,7 +1222,7 @@ final class ChannelController_Tests: XCTestCase {
         // Update the read
         try client.databaseContainer.writeSynchronously {
             let read = try XCTUnwrap($0.loadChannelRead(cid: self.channelId, userId: userId))
-            read.lastReadAt = newReadDate
+            read.lastReadAt = newReadDate.bridgeDate
         }
 
         // Assert the value is updated and the delegate is called
@@ -2287,6 +2287,41 @@ final class ChannelController_Tests: XCTestCase {
         AssertAsync.canBeReleased(&weakController)
     }
     
+    func test_keystroke_withParentMessageId() throws {
+        let payload = dummyPayload(with: channelId, channelConfig: ChannelConfig(typingEventsEnabled: true))
+        try client.databaseContainer.writeSynchronously { session in
+            try session.saveChannel(payload: payload)
+        }
+        
+        let parentMessageId = MessageId.unique
+        
+        // Simulate `keystroke` call and catch the completion
+        var completionCalledError: Error?
+        controller.sendKeystrokeEvent(parentMessageId: parentMessageId) { completionCalledError = $0 }
+        
+        // Keep a weak ref so we can check if it's actually deallocated
+        weak var weakController = controller
+        
+        // (Try to) deallocate the controller
+        // by not keeping any references to it
+        controller = nil
+        
+        // Check keystroke cid and parentMessageId.
+        XCTAssertEqual(env.eventSender!.keystroke_cid, channelId)
+        XCTAssertEqual(env.eventSender!.keystroke_parentMessageId, parentMessageId)
+        
+        // Simulate failed update
+        let testError = TestError()
+        env.eventSender!.keystroke_completion!(testError)
+        // Release reference of completion so we can deallocate stuff
+        env.eventSender!.keystroke_completion = nil
+        
+        // Completion should be called with the error
+        AssertAsync.willBeEqual(completionCalledError as? TestError, testError)
+        // `weakController` should be deallocated too
+        AssertAsync.canBeReleased(&weakController)
+    }
+    
     func test_startTyping() throws {
         let payload = dummyPayload(with: channelId, channelConfig: ChannelConfig(typingEventsEnabled: true))
         try client.databaseContainer.writeSynchronously { session in
@@ -2323,6 +2358,41 @@ final class ChannelController_Tests: XCTestCase {
         AssertAsync.canBeReleased(&weakController)
     }
     
+    func test_startTyping_withParentMessageId() throws {
+        let payload = dummyPayload(with: channelId, channelConfig: ChannelConfig(typingEventsEnabled: true))
+        try client.databaseContainer.writeSynchronously { session in
+            try session.saveChannel(payload: payload)
+        }
+        
+        let parentMessageId = MessageId.unique
+        
+        // Simulate `startTyping` call and catch the completion
+        var completionCalledError: Error?
+        controller.sendStartTypingEvent(parentMessageId: parentMessageId) { completionCalledError = $0 }
+        
+        // Keep a weak ref so we can check if it's actually deallocated
+        weak var weakController = controller
+        
+        // (Try to) deallocate the controller
+        // by not keeping any references to it
+        controller = nil
+        
+        // Check `startTyping` cid and parentMessageId.
+        XCTAssertEqual(env.eventSender!.startTyping_cid, channelId)
+        XCTAssertEqual(env.eventSender!.startTyping_parentMessageId, parentMessageId)
+        
+        // Simulate failed update
+        let testError = TestError()
+        env.eventSender!.startTyping_completion!(testError)
+        // Release reference of completion so we can deallocate stuff
+        env.eventSender!.startTyping_completion = nil
+        
+        // Completion should be called with the error
+        AssertAsync.willBeEqual(completionCalledError as? TestError, testError)
+        // `weakController` should be deallocated too
+        AssertAsync.canBeReleased(&weakController)
+    }
+    
     func test_stopTyping() throws {
         let payload = dummyPayload(with: channelId, channelConfig: ChannelConfig(typingEventsEnabled: true))
         try client.databaseContainer.writeSynchronously { session in
@@ -2346,6 +2416,41 @@ final class ChannelController_Tests: XCTestCase {
         
         // Check `stopTyping` cid.
         XCTAssertEqual(env.eventSender!.stopTyping_cid, channelId)
+        
+        // Simulate failed update
+        let testError = TestError()
+        env.eventSender!.stopTyping_completion!(testError)
+        // Release reference of completion so we can deallocate stuff
+        env.eventSender!.stopTyping_completion = nil
+        
+        // Completion should be called with the error
+        AssertAsync.willBeEqual(completionCalledError as? TestError, testError)
+        // `weakController` should be deallocated too
+        AssertAsync.canBeReleased(&weakController)
+    }
+    
+    func test_stopTyping_withParentMessageId() throws {
+        let payload = dummyPayload(with: channelId, channelConfig: ChannelConfig(typingEventsEnabled: true))
+        try client.databaseContainer.writeSynchronously { session in
+            try session.saveChannel(payload: payload)
+        }
+        
+        let parentMessageId = MessageId.unique
+        
+        // Simulate `stopTyping` call and catch the completion
+        var completionCalledError: Error?
+        controller.sendStopTypingEvent(parentMessageId: parentMessageId) { completionCalledError = $0 }
+        
+        // Keep a weak ref so we can check if it's actually deallocated
+        weak var weakController = controller
+        
+        // (Try to) deallocate the controller
+        // by not keeping any references to it
+        controller = nil
+        
+        // Check `stopTyping` cid and parentMessageId.
+        XCTAssertEqual(env.eventSender!.stopTyping_cid, channelId)
+        XCTAssertEqual(env.eventSender!.stopTyping_parentMessageId, parentMessageId)
         
         // Simulate failed update
         let testError = TestError()
@@ -3398,6 +3503,73 @@ final class ChannelController_Tests: XCTestCase {
         AssertAsync.willBeEqual(completionCalledError as? TestError, testError)
     }
     
+    func test_currentCooldownTime_whenSlowModeIsActive_andLastMessageFromCurrentUserExists_thenCooldownTimeIsGreaterThanZero(
+    ) throws {
+        // GIVEN
+        let user: UserPayload = dummyCurrentUser
+        let message: MessagePayload = .dummy(messageId: .unique, authorUserId: user.id, createdAt: Date())
+        let channelPayload = dummyPayload(with: channelId, messages: [message], cooldownDuration: 5)
+        
+        try client.databaseContainer.createCurrentUser(id: user.id)
+        
+        try client.databaseContainer.writeSynchronously { session in
+            try session.saveChannel(payload: channelPayload)
+        }
+        
+        // WHEN
+        let currentCooldownTime = controller.currentCooldownTime()
+        
+        // THEN
+        XCTAssertGreaterThan(currentCooldownTime, 0)
+    }
+    
+    func test_currentCooldownTime_whenSlowModeIsNotActive_thenCooldownTimeIsZero() throws {
+        // GIVEN
+        let user: UserPayload = dummyCurrentUser
+        let channelPayload = dummyPayload(with: channelId, cooldownDuration: 0)
+        
+        try client.databaseContainer.createCurrentUser(id: user.id)
+        
+        try client.databaseContainer.writeSynchronously { session in
+            try session.saveChannel(payload: channelPayload)
+        }
+        
+        // WHEN
+        let currentCooldownTime = controller.currentCooldownTime()
+        
+        // THEN
+        XCTAssertEqual(currentCooldownTime, 0)
+    }
+    
+    func test_currentCooldownTime_doesNotReturnNegativeValues() throws {
+        // GIVEN
+        let user: UserPayload = dummyCurrentUser
+        
+        let message: MessagePayload = .dummy(
+            messageId: .unique,
+            authorUserId: user.id,
+            createdAt: Date().addingTimeInterval(-20)
+        )
+        
+        let channelPayload = dummyPayload(
+            with: channelId,
+            messages: [message],
+            cooldownDuration: 5
+        )
+        
+        try client.databaseContainer.createCurrentUser(id: user.id)
+        
+        try client.databaseContainer.writeSynchronously { session in
+            try session.saveChannel(payload: channelPayload)
+        }
+        
+        // WHEN
+        let currentCooldownTime = controller.currentCooldownTime()
+        
+        // THEN
+        XCTAssertEqual(currentCooldownTime, 0)
+    }
+    
     // MARK: - Start watching
     
     func test_startWatching_failsForNewChannels() throws {
@@ -3546,7 +3718,7 @@ final class ChannelController_Tests: XCTestCase {
 
         requestBlock(env.channelUpdater)
 
-        waitForExpectations(timeout: 0.2, handler: nil)
+        waitForExpectations(timeout: 0.5, handler: nil)
         return receivedError
     }
     

@@ -76,18 +76,17 @@ class NotificationService: UNNotificationServiceExtension {
             return
         }
 
-        guard let userId = UserDefaults(suiteName: applicationGroupIdentifier)?.string(forKey: currentUserIdRegisteredForPush),
-              let userCredentials = UserCredentials.builtInUsersByID(id: userId) else {
+        guard let userCredentials = UserDefaults.shared.currentUser else {
             contentHandler(content)
             return
         }
 
         var config = ChatClientConfig(apiKey: .init(apiKeyString))
-//        config.isLocalStorageEnabled = true
+//        config.isLocalStorageEnabled = false
         config.applicationGroupIdentifier = applicationGroupIdentifier
 
         let client = ChatClient(config: config)
-        client.setToken(token: Token(stringLiteral: userCredentials.token))
+        client.setToken(token: Token(stringLiteral: userCredentials.token.rawValue))
 
         let chatHandler = ChatRemoteNotificationHandler(client: client, content: content)
 

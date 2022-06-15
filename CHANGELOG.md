@@ -2,8 +2,69 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 # Upcoming
+## StreamChat
+### ✅ Added
+- `parentMessageId` parameter for typing events [#2080](https://github.com/GetStream/stream-chat-swift/issues/2080)
+### 🐞 Fixed
+- Fix hidden channels not appearing on relaunch [#2056](https://github.com/GetStream/stream-chat-swift/issues/2056)
+- Fix `channel.hidden` event failing to decode on launch/reconnection [#2056](https://github.com/GetStream/stream-chat-swift/issues/2056)
+- Fix messages in hidden channels with `clearHistory` re-appearing [#2056](https://github.com/GetStream/stream-chat-swift/issues/2056)
+- Fix last message of hidden channel with `clearHistory` visible in channel list [#2056](https://github.com/GetStream/stream-chat-swift/issues/2056)
+- Message action title now supports displaying 2 lines of text instead of 1 [#2082](https://github.com/GetStream/stream-chat-swift/pull/2082)
+- Fix Logger persisting config after usage, preventing changing parameters (such as LogLevel) [#2081](https://github.com/GetStream/stream-chat-swift/issues/2081)
+### 🔄 Changed
+- JSON decoding performance is increased 3 times, parsing time reduced by %70 [#2081](https://github.com/GetStream/stream-chat-swift/issues/2081)
+
+## StreamChatUI
+### ✅ Added
+- Show typing users within a thread [#2080](https://github.com/GetStream/stream-chat-swift/issues/2080)
+
+# [4.16.0](https://github.com/GetStream/stream-chat-swift/releases/tag/4.16.0)
+_June 10, 2022_
+## StreamChat
+### 💥 Removed
+- The `tokenProvider` property was removed from `ChatClient` [#2031](https://github.com/GetStream/stream-chat-swift/issues/2031)
+### ✅ Added
+- Make it possible to call `ChatClient.connect` with a `tokenProvider` [#2031](https://github.com/GetStream/stream-chat-swift/issues/2031)
+### 🐞 Fixed
+- Saving payloads to local database is now 50% faster. Initial launch and displaying channel list should be noticeably faster [#1973](https://github.com/GetStream/stream-chat-swift/issues/1973)
+- Fix not waiting for last batch of events to be processed when connecting as another user [#2016](https://github.com/GetStream/stream-chat-swift/issues/2016)
+- Fix `Date._unconditionallyBridgeFromObjectiveC(NSDate?)` crash [#2027](https://github.com/GetStream/stream-chat-swift/pull/2027)
+- Fix `NSHashTable` count underflow crash [#2032](https://github.com/GetStream/stream-chat-swift/pull/2032)
+- Fix crash when participant hard deletes a message [2075](https://github.com/GetStream/stream-chat-swift/pull/2075)
+- Fix possible deadlock in `CurrentUserController` functions being called from background threads [#2074](https://github.com/GetStream/stream-chat-swift/issues/2074)
+- Fix using incorrect index path for updates [#2044](https://github.com/GetStream/stream-chat-swift/pull/2044)
+### 🔄 Changed
+- Changing the decoding of `role` to `channel_role` as `role` is now deprecated on the backend. This allows for custom roles defined within your V2 permissions [#2028](https://github.com/GetStream/stream-chat-swift/issues/2028)
+
+## StreamChatUI
+### ✅ Added
+- Add Support for Slow Mode [#1953](https://github.com/GetStream/stream-chat-swift/pull/1953)
+- Present channel screen modally when channel list in not embedded by navigation controller [#2011](https://github.com/GetStream/stream-chat-swift/pull/2011)
+- Show channel screen as right detail when channel list is embedded by split view controller [#2011](https://github.com/GetStream/stream-chat-swift/pull/2011)
+### 🐞 Fixed
+- Fix DM Channel with multiple members displaying only 1 user avatar [#2019](https://github.com/GetStream/stream-chat-swift/pull/2019)
+- Improve stability of Message List with Diffing disabled [#2006](https://github.com/GetStream/stream-chat-swift/pull/2006) [#2076](https://github.com/GetStream/stream-chat-swift/pull/2076)
+- Fix quoted message extra spacing jump UI glitch [#2050](https://github.com/GetStream/stream-chat-swift/pull/2050)
+- Fix edge case where cell would be hidden after reacting to it [#2053](https://github.com/GetStream/stream-chat-swift/pull/2053)
+
+# [4.15.1](https://github.com/GetStream/stream-chat-swift/releases/tag/4.15.1)
+_June 01, 2022_
+
+This release does not contain any code changes.
 
 ### 🔄 Changed
+* Provides new `SPI` config.
+* Adds [swift docc plugin](https://github.com/apple/swift-docc-plugin) to package dependencies.
+
+# [4.15.1](https://github.com/GetStream/stream-chat-swift/releases/tag/4.15.1)
+_June 01, 2022_
+
+This release does not contain any code changes.
+
+### 🔄 Changed
+* Provides new `SPI` config.
+* Adds [swift docc plugin](https://github.com/apple/swift-docc-plugin) to package dependencies.
 
 # [4.15.1](https://github.com/GetStream/stream-chat-swift/releases/tag/4.15.1)
 _June 01, 2022_
@@ -27,6 +88,7 @@ _May 11, 2022_
     - decrement when message is hard deleted
 - Fix paginated channels in channel list were left without messages when sync is executed [#1985](https://github.com/GetStream/stream-chat-swift/issues/1985)
 - Fix `deletedMessagesVisibility == .alwaysVisible` shows deleted ephemeral messages in message list [#1991](https://github.com/GetStream/stream-chat-swift/issues/1991)
+- Fix disappearing messages when uploading an attachment and reentering the channel [#2000](https://github.com/GetStream/stream-chat-swift/pull/2000)
 ### 🔄 Changed
 - Rename `mentionedMessages` to `mentions` in `ChannelUnreadCount` [#1978](https://github.com/GetStream/stream-chat-swift/issues/1978)
 - Changes `.team` filter `FilterKey` to accept `nil` as a parameter  [#1968](https://github.com/GetStream/stream-chat-swift/pull/1968)
