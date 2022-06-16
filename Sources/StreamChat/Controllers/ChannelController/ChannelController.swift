@@ -1348,6 +1348,7 @@ public extension ChatChannelController {
         
         return max(0, cooldownDuration - Int(currentTime))
     }
+}
 
 extension ChatChannelController {
     struct Environment {
