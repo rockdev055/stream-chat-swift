@@ -2,8 +2,10 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 # Upcoming
-
-### 🔄 Changed
+## StreamChat
+### 🐞 Fixed
+- Websocket not being disconnected when API request fails with expired token error [#2051](https://github.com/GetStream/stream-chat-swift/issues/2051)
+- Error not being reported when connecting with an expired token [#2051](https://github.com/GetStream/stream-chat-swift/issues/2051)
 
 # [4.17.0](https://github.com/GetStream/stream-chat-swift/releases/tag/4.17.0)
 _June 22, 2022_
