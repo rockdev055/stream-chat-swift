@@ -497,6 +497,7 @@ lane :test_e2e_mock do |options|
   build_for_testing = is_ci && options[:cron].nil?
 
   scan_options = {
+    only_testing: ['StreamChatUITestsAppUITests/Attachments_Tests/test_participantUploadsImage'], # FIXME
     project: 'StreamChat.xcodeproj',
     scheme: 'StreamChatUITestsApp',
     testplan: 'StreamChatUITestsApp',
