@@ -26,7 +26,7 @@ jobs:
       ALLURE_TOKEN: ${{ secrets.ALLURE_TOKEN }}
     strategy:
       matrix:
-        ios: ["11.4", "12.5", "13.7", "14.8", "latest"]
+        ios: ["12.4", "13.7", "14.5", "latest"]
         device: ["iPhone 11 Pro Max"] # , "iPhone SE (3rd generation)", "iPad Air (5th generation)"]
       fail-fast: false
     steps:
