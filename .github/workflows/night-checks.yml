@@ -37,9 +37,9 @@ jobs:
     - name: Prepare Simulator
       uses: ./.github/actions/prepare-ios-simulator
       with:
-        device: matrix.device
-        ios: matrix.ios
-        xcode: env.XCODE_VERSION
+        device: ${{ matrix.device }}
+        ios: ${{ matrix.ios }}
+        xcode: ${{ env.XCODE_VERSION }}
     # - name: Launch Allure TestOps
     #   run: bundle exec fastlane allure_launch
     - name: Run UI Tests (Debug)
