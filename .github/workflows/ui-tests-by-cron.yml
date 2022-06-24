@@ -1,0 +1,58 @@
+name: Smoke Checks
+
+on:
+  push:
+    branches:
+      - feature/CIS-1961-cron
+  schedule:
+    # Runs "At 00:00 every night" (see https://crontab.guru)
+    - cron: '0 0 * * *'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  HOMEBREW_NO_INSTALL_CLEANUP: 1 # Disable cleanup for homebrew, we don't need it on CI
+  XCODE_VERSION: 13.3.1
+
+jobs:
+  build-and-test-e2e-debug:
+    name: Test E2E UI (Debug)
+    runs-on: macos-12
+    env:
+      GITHUB_EVENT: ${{ toJson(github.event) }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ALLURE_TOKEN: ${{ secrets.ALLURE_TOKEN }}
+    strategy:
+      matrix:
+        ios: ["11.4", "12.5", "13.7", "14.8", "latest"]
+        device: ["iPhone 11 Pro Max"] # , "iPhone SE (3rd generation)", "iPad Air (5th generation)"]
+      fail-fast: false
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ./.github/actions/bootstrap
+      env:
+        INSTALL_ALLURE: true
+    - name: Prepare Simulator
+      uses: ./.github/actions/prepare-ios-simulator
+      with:
+        device: "{{ matrix.device }}"
+        ios: "{{ matrix.ios }}"
+        xcode: "{{ env.XCODE_VERSION }}"
+    # - name: Launch Allure TestOps
+    #   run: bundle exec fastlane allure_launch
+    - name: Run UI Tests (Debug)
+      run: bundle exec fastlane test_e2e_mock cron:true device:"${{ matrix.device }}" ios:"${{ matrix.ios }}"
+    - uses: test-summary/action@v1
+      with:
+        paths: fastlane/test_output/report.junit
+      if: failure()
+    # - name: Allure TestOps Upload
+    #   if: success() || failure()
+    #   run: bundle exec fastlane allure_upload launch_id:$LAUNCH_ID
+    # - name: Allure TestOps Launch Removal
+    #   if: cancelled()
+    #   run: bundle exec fastlane allure_launch_removal launch_id:$LAUNCH_ID
+    #   env:
+    #     ALLURE_TOKEN: ${{ secrets.ALLURE_TOKEN }}

@@ -157,7 +157,7 @@ jobs:
     - uses: ./.github/actions/bootstrap
       env:
         XCODE_ACTIONS: false
-    - name: Create a new launch on Allure TestOps
+    - name: Launch Allure TestOps
       run: bundle exec fastlane allure_launch
       env:
         ALLURE_TOKEN: ${{ secrets.ALLURE_TOKEN }}

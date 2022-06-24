@@ -488,21 +488,25 @@ end
 
 desc "Runs e2e ui tests using mock server in Debug config"
 lane :test_e2e_mock do |options|
-  next unless testing_required?(:e2e)
+  next unless options[:cron] || testing_required?(:e2e)
 
   add_ci_env_var_to('../StreamChatUITestsAppUITests/StreamChatUITestsApp.xctestplan')
+
+  ios = options[:ios]
+  device = ios && ios != 'latest' ? "#{options[:device]} (#{ios})" : options[:device]
+  build_for_testing = is_ci && options[:cron].nil?
 
   scan_options = {
     project: 'StreamChat.xcodeproj',
     scheme: 'StreamChatUITestsApp',
     testplan: 'StreamChatUITestsApp',
     configuration: 'Debug',
-    devices: options[:device],
+    devices: device,
     number_of_retries: 1
   }
-  scan(scan_options.merge(clean: true, build_for_testing: is_ci))
+  scan(scan_options.merge(clean: true, build_for_testing: build_for_testing))
 
-  if is_ci
+  if build_for_testing
     parallelize_tests_on_ci(
       scan: scan_options,
       derived_data: lane_context[SharedValues::SCAN_DERIVED_DATA_PATH],
