@@ -519,17 +519,15 @@ extension UserRobot {
     
     @discardableResult
     func assertImage(
-        count: Int = 1,
         isPresent: Bool,
         at messageCellIndex: Int? = nil,
         file: StaticString = #filePath,
         line: UInt = #line
     ) -> Self {
-        let messageCell = messageCell(withIndex: messageCellIndex, file: file, line: line)
-        let images = attributes.images(in: messageCell)
-        let errMessage = isPresent ? "There are no images" : "Image are presented"
-        _ = isPresent ? images.firstMatch.wait() : images.firstMatch.waitForLoss()
-        XCTAssertEqual(images.count, count, errMessage, file: file, line: line)
+        tapOnMessage(at: messageCellIndex)
+        let fullscreenImage = attributes.fullscreenImage().wait()
+        let errMessage = isPresent ? "There is no image" : "Image is presented"
+        XCTAssertTrue(fullscreenImage.exists, errMessage, file: file, line: line)
         return self
     }
     

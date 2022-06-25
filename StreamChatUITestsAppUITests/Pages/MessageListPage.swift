@@ -234,6 +234,10 @@ class MessageListPage {
             messageCell.images.matching(NSPredicate(format: "identifier LIKE 'imageView'"))
         }
         
+        static func fullscreenImage() -> XCUIElement {
+            app.cells["ImageAttachmentGalleryCell"].images.firstMatch
+        }
+        
         static func fileNames(in messageCell: XCUIElement) -> XCUIElementQuery {
             messageCell.staticTexts.matching(NSPredicate(format: "identifier LIKE 'fileNameLabel'"))
         }
